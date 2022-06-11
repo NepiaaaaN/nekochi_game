@@ -101,7 +101,7 @@ void gameTitle(){
 }
 
 void gamePlay(){
-  gamePlayBGM.play();
+  // gamePlayBGM.play();
   image(image_backGround, 0,90,600,360);   // 背景表示(表示座標, サイズ)
   playerMove();                            // プレイヤー移動
   image(image_player, g_playerX, 58);      // プレイヤー表示
@@ -110,7 +110,7 @@ void gamePlay(){
   bombPlayerMove();                        // プレイヤー爆弾
   bombEnemyMove();                         // 敵の爆弾
   scoreDisp();  // スコア表示
-  gamePlayBGM.pause();
+  // gamePlayBGM.pause();
 }
 
 void playerMove(){
@@ -159,6 +159,7 @@ void audioLoad(){
 
 void imgLoad(){
   image_backGround = loadImage("sm_bg.png");  //背景絵の読み込み
+  //image_player = loadImage("nekochi_player.png");
   image_player = loadImage("sm_player.png");
   enemy[0] = loadImage("sm_enemyL.png");
   enemy[1] = loadImage("sm_enemyR.png");
