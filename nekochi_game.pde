@@ -24,12 +24,14 @@ public enum EnemyDirection {
 
 Minim minim; // Minimクラスのインスタンス(Minimオブジェクト)
 AudioPlayer gameTitleBGM, gamePlayBGM; //loadFileメソッドはAudioPlayerオブジェクトを戻すため変数宣言
-PImage image_backGround, image_player, bombPlayer, bombEnemy, title;
+PImage image_background, image_player, bombPlayer, bombEnemy, title;
 PImage[] enemy = new PImage[4];
+final int BACKGROUND_WIDTH = 600;
+final int BACKGROUND_HEIGHT = 450;
 GameState g_gameSequence; // ゲームの流れを管理
 int g_playerX;  // プレイヤーx座標
-//int g_playerY;  // プレイヤーy座標(今回は使用しない)
-int g_playerWidth = 120;  //プレイヤーの幅
+final int PLAYER_INITIAL_POSITION_X = 240;
+final int PLAYER_WIDTH = 120;  //プレイヤーの幅
 float[] g_enemyX = new float[12];  // 敵x座標
 int[] g_enemyY = new int[12];  // 敵y座標
 EnemyDirection[] g_enemyDirection = new EnemyDirection[12];
@@ -46,9 +48,12 @@ int g_playerSink;   // プレイヤー沈む
 int g_messageCount; // メッセージ用カウンタ
 int score;
 
+void settings() {
+  size(BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
+}
+
 void setup(){ // 開始時に一回だけ呼ばれる
-  size(600,450); // 画面サイズ
-  audioLoad();
+  // audioLoad();
   noStroke();
   frameRate(30); //フレームレート
   imgLoad();
@@ -79,21 +84,23 @@ void stop(){  // スケッチが終了する時に必ず呼ばれる
 
 void gameInit(){  // 初期化関数
   g_gameSequence = GameState.GAMESTART;
-  g_playerX = 240;  // Playerの初期X座標
+  g_playerX = PLAYER_INITIAL_POSITION_X;
   Arrays.fill(g_enemyDirection, EnemyDirection.UNUSED);
-  Arrays.fill(g_bombPlayerY, -20);  // -20 : 未使用
-  g_bombWait = 0;
-  Arrays.fill(g_keyState, 0);  // 1:押下中 0:押されていない
+  Arrays.fill(g_bombPlayerY, -20);  // -20 : 未使用 ★ここ直せる
   Arrays.fill(g_bombEnemyY, -20); // -20 : 未使用
+  Arrays.fill(g_keyState, 0);  // 1:押下中 0:押されていない
+  g_bombWait = 0;
   g_playerSink = 0;
   g_messageCount = 0;
   score = 0;
 }
 
 void gameTitle(){
-  image(title, 0, 0, 600, 450); // タイトル画像の表示
+  image(title, 0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT); // タイトル画像の表示
   g_messageCount++;
-  if ( (g_messageCount > 60) && ((g_messageCount % 60) < 40) ) {  // 何もさせない待ち時間を作る
+  boolean isEndWaitTime = g_messageCount > 60; // 何もさせない待ち時間を作る
+  boolean isDisplay = (g_messageCount % 60) < 40;
+  if ( isEndWaitTime && isDisplay ) {
     textSize(30);
     fill(40, 250, 40);
     text("Push any key!", 210, 320);
@@ -102,9 +109,11 @@ void gameTitle(){
 
 void gamePlay(){
   // gamePlayBGM.play();
-  image(image_backGround, 0,90,600,360);   // 背景表示(表示座標, サイズ)
+  int backgroundImageStartPosition = BACKGROUND_HEIGHT / 10 * 2;  // 背景の高さの20%
+  int backgroundImageEndPosition = BACKGROUND_HEIGHT / 10 * 8;  // 背景の高さの80%
+  image(image_background, 0, backgroundImageStartPosition, BACKGROUND_WIDTH, backgroundImageEndPosition);
+  image(image_player, g_playerX, backgroundImageStartPosition - image_player.height);      // プレイヤー表示
   playerMove();                            // プレイヤー移動
-  image(image_player, g_playerX, 58);      // プレイヤー表示
   enemyMove();                             // 敵の移動
   enemyDisplay();                          // 敵の表示
   bombPlayerMove();                        // プレイヤー爆弾
@@ -117,7 +126,7 @@ void playerMove(){
   if( (g_keyState[0] == 1) && (g_playerX > 0) ){  // 左キー
     g_playerX -= 3;  // 左へ移動
   }
-  if( (g_keyState[1] == 1) && (g_playerX < 600 - g_playerWidth) ){  // 右キー
+  if( (g_keyState[1] == 1) && (g_playerX < 600 - PLAYER_WIDTH) ){  // 右キー
     g_playerX += 3;  // 右へ移動
   }
   if( g_bombWait > 0 ){  // チャタリング対策
@@ -131,7 +140,7 @@ void playerMove(){
 
 void gameOver(){
   image(image_player, g_playerX, 58 + (g_playerSink/2) );  // プレイヤー表示
-  image(image_backGround, 0, 90, 600, 360); // 背景表示
+  image(image_background, 0, 90, 600, 360); // 背景表示
   enemyDisplay(); // 敵の表示
   bombEnemyMove();  // 敵の爆弾
   scoreDisp();  // スコア表示
@@ -151,14 +160,14 @@ void gameOver(){
   }
 }
 
-void audioLoad(){
-  minim = new Minim( this );
-  gameTitleBGM = minim.loadFile( "mikenekonowaltz.mp3" );
-  gamePlayBGM = minim.loadFile( "nagagutsudeodekake.mp3" );
-}
+// void audioLoad(){
+//   minim = new Minim( this );
+//   gameTitleBGM = minim.loadFile( "mikenekonowaltz.mp3" );
+//   gamePlayBGM = minim.loadFile( "nagagutsudeodekake.mp3" );
+// }
 
 void imgLoad(){
-  image_backGround = loadImage("sm_bg.png");  //背景絵の読み込み
+  image_background = loadImage("sm_bg.png");  //背景絵の読み込み
   //image_player = loadImage("nekochi_player.png");
   image_player = loadImage("sm_player.png");
   enemy[0] = loadImage("sm_enemyL.png");
@@ -245,7 +254,7 @@ void enemyAdd(){
 void bombPlayerAdd(){
   for(int i=0; i<6; i++){
     if( g_bombPlayerY[i] == -20 ){  // 未使用の爆弾を使う
-      g_bombPlayerX[i] = g_playerX +  (g_playerWidth / 2);  // プレイヤーの中心座標
+      g_bombPlayerX[i] = g_playerX +  (PLAYER_WIDTH / 2);  // プレイヤーの中心座標
       g_bombPlayerY[i] = 90;
       break;  // 一発だけ発射
     }
@@ -320,7 +329,7 @@ void bombEnemyMove(){ // 敵爆弾の表示と移動
         g_bombEnemyY[i] = -20;  // 未使用に戻す
       }
       // プレイヤーとの当たり判定
-      if( (g_bombEnemyX[i] < g_playerX + g_playerWidth) && (g_bombEnemyX[i]+16 > g_playerX)){
+      if( (g_bombEnemyX[i] < g_playerX + PLAYER_WIDTH) && (g_bombEnemyX[i]+16 > g_playerX)){
         g_gameSequence = GameState.GAMEOVER; // ゲームオーバーへ
       }
     } else { // 敵の爆弾カウントが0でない場合...
